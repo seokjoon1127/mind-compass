@@ -223,6 +223,17 @@
     el.progressLabel.textContent = "질문 " + (answered + 1) + " / " + max;
 
     clear(el.questionBody);
+
+    // Prompt line above the cards. Card comparisons share one consistent
+    // instruction; any indicator question falls back to its own text.
+    var promptText =
+      q.kind === "weight_pairwise" || q.kind === "sub_question"
+        ? "이번 결정에서 더 중요한 쪽을 골라주세요"
+        : q.question || "";
+    if (promptText) {
+      el.questionBody.appendChild(makeEl("p", "question__prompt", promptText));
+    }
+
     if (q.kind === "weight_pairwise") {
       renderPairwise(q);
     } else if (q.kind === "sub_question") {

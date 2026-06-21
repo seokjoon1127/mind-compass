@@ -399,6 +399,18 @@ body {
   gap: var(--s-lg);
   align-items: center;
 }
+.question__prompt {
+  font-family: var(--font-text);
+  font-size: clamp(19px, 4.5vw, 22px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+  color: var(--foreground);
+  text-align: center;
+  text-wrap: balance;
+  max-width: 560px;
+  margin: 0 0 var(--s-xs);
+}
 
 /* pairwise cards */
 .pair {
