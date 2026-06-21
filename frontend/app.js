@@ -25,7 +25,6 @@
     setupError: document.getElementById("setup-error"),
     loading: document.getElementById("loading"),
     loadingText: document.getElementById("loading-text"),
-    questionText: document.getElementById("question-text"),
     questionBody: document.getElementById("question-body"),
     progressFill: document.getElementById("progress-fill"),
     progressLabel: document.getElementById("progress-label"),
@@ -222,8 +221,6 @@
     var ratio = max > 0 ? Math.min(1, (answered + 1) / max) : 0;
     el.progressFill.style.width = (ratio * 100).toFixed(0) + "%";
     el.progressLabel.textContent = "질문 " + (answered + 1) + " / " + max;
-
-    el.questionText.textContent = q.question || "";
 
     clear(el.questionBody);
     if (q.kind === "weight_pairwise") {
