@@ -160,6 +160,7 @@
   ];
   var loadingTimer = null;
   function startLoading() {
+    if (loadingTimer) window.clearInterval(loadingTimer);
     var i = 0;
     el.loadingText.textContent = LOADING_MESSAGES[0];
     el.loading.hidden = false;
@@ -393,6 +394,18 @@
   function submit(questionId, value) {
     if (!state.sessionId) return;
     setQuestionBusy(true);
+
+    // On the final card the next step is the (slower) conclusion — show the
+    // loading spinner the instant it's picked so the wait is never a frozen
+    // card screen. "잘 모르겠어요" (unknown) instead branches into easier
+    // sub-questions, so it doesn't count as the last card.
+    var prog = state.question && state.question.progress;
+    var lastCard = !!prog && value !== "unknown" && (prog.answered + 1) >= prog.max;
+    if (lastCard) {
+      startLoading();
+      el.loadingText.textContent = "결론을 정리하는 중";
+    }
+
     apiPost("/api/sessions/" + encodeURIComponent(state.sessionId) + "/answers", {
       question_id: questionId,
       value: value,
@@ -401,9 +414,11 @@
         if (data.done || !data.question) {
           return loadResult();
         }
+        stopLoading(); // not the last card after all — return to the cards
         renderQuestion(data.question);
       })
       .catch(function (err) {
+        stopLoading();
         setQuestionBusy(false);
         // gentle inline notice — keep it calm, not error-looking
         el.progressLabel.textContent = (err.detail || err.message || "다시 시도해주세요.");
