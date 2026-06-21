@@ -116,11 +116,22 @@
         </section>
 
         <div class="result__footer">
-          <button type="button" id="restart-btn" class="btn btn--primary btn--lg">다시 시작</button>
+          <div id="share-banner" class="share-banner" hidden>
+            <span class="share-banner__icon" aria-hidden="true">🔗</span>
+            <span>공유받은 결과입니다</span>
+          </div>
+          <div class="result__footer-btns">
+            <button type="button" id="share-btn" class="btn btn--secondary btn--lg" hidden>결과 공유하기</button>
+            <button type="button" id="restart-btn" class="btn btn--primary btn--lg">다시 시작</button>
+          </div>
         </div>
       </div>
     </section>
   </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-msg"></span>
+  </div>
 
   <script src="app.js"></script>
 </body>

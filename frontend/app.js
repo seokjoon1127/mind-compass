@@ -29,6 +29,10 @@
     progressFill: document.getElementById("progress-fill"),
     progressLabel: document.getElementById("progress-label"),
     restartBtn: document.getElementById("restart-btn"),
+    shareBtn: document.getElementById("share-btn"),
+    shareBanner: document.getElementById("share-banner"),
+    toast: document.getElementById("toast"),
+    toastMsg: document.getElementById("toast-msg"),
     // result
     resultWinner: document.getElementById("result-winner"),
     robustnessBadge: document.getElementById("robustness-badge"),
@@ -45,6 +49,18 @@
   };
 
   // ---------------------------------------------------------------- helpers
+  var _toastTimer = null;
+  function showToast(msg) {
+    el.toastMsg.textContent = msg;
+    el.toast.hidden = false;
+    el.toast.classList.add("toast--visible");
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function () {
+      el.toast.classList.remove("toast--visible");
+      setTimeout(function () { el.toast.hidden = true; }, 300);
+    }, 2800);
+  }
+
   function showScreen(name) {
     Object.keys(screens).forEach(function (key) {
       var node = screens[key];
@@ -446,6 +462,9 @@
   function renderResult(data) {
     data = data || {};
 
+    // show share button (hidden again in read-only mode after this)
+    el.shareBtn.hidden = false;
+
     // winner
     var winner = data.winner || {};
     el.resultWinner.textContent = winner.name || "결론";
@@ -619,10 +638,59 @@
     el.contextInput.value = "";
     el.setupError.hidden = true;
     el.startBtn.disabled = false;
+    el.shareBtn.hidden = true;
+    el.shareBanner.hidden = true;
+    el.restartBtn.textContent = "다시 시작";
+    // strip ?share= from URL without reload
+    history.replaceState(null, "", window.location.pathname);
     showScreen("setup");
     el.contextInput.focus();
   });
 
+  // ---------------------------------------------------------------- share button
+  el.shareBtn.addEventListener("click", function () {
+    if (!state.sessionId) return;
+    var url = window.location.origin + window.location.pathname + "?share=" + encodeURIComponent(state.sessionId);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        showToast("🔗 링크가 복사되었어요!");
+      }).catch(function () {
+        prompt("아래 링크를 복사하세요", url);
+      });
+    } else {
+      prompt("아래 링크를 복사하세요", url);
+    }
+  });
+
   // ---------------------------------------------------------------- init
-  showScreen("setup");
+  (function init() {
+    var params = new URLSearchParams(window.location.search);
+    var shareId = params.get("share");
+
+    if (shareId) {
+      // read-only shared result mode
+      startLoading();
+      el.loadingText.textContent = "결과를 불러오는 중";
+      apiGet("/api/share/" + encodeURIComponent(shareId))
+        .then(function (data) {
+          stopLoading();
+          state.sessionId = shareId;
+          renderResult(data);
+          // read-only UI
+          el.shareBanner.hidden = false;
+          el.shareBtn.hidden = true;
+          el.restartBtn.textContent = "나도 해보기";
+          showScreen("result");
+        })
+        .catch(function (err) {
+          stopLoading();
+          el.setupError.textContent = err.detail || "공유 링크를 불러올 수 없습니다.";
+          el.setupError.hidden = false;
+          history.replaceState(null, "", window.location.pathname);
+          showScreen("setup");
+        });
+    } else {
+      showScreen("setup");
+    }
+  })();
 })();

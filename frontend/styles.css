@@ -800,8 +800,68 @@ body {
 
 .result__footer {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-md);
   margin-top: var(--s-section);
+}
+.result__footer-btns {
+  display: flex;
+  gap: var(--s-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* secondary button variant */
+.btn--secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.btn--secondary:hover {
+  background: rgba(201, 168, 76, 0.08);
+}
+
+/* share banner */
+.share-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  padding: var(--s-xs) var(--s-md);
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.share-banner__icon {
+  font-size: 15px;
+}
+
+/* toast */
+.toast {
+  position: fixed;
+  bottom: var(--s-xl);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: var(--s-sm) var(--s-lg);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* ===================== RESPONSIVE ===================== */

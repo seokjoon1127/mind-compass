@@ -108,6 +108,22 @@ def get_result(session_id: str) -> dict:
         raise HTTPException(status_code=500, detail="리포트 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") from exc
 
 
+@app.get("/api/share/{session_id}")
+def get_shared_result(session_id: str) -> dict:
+    """Read-only public endpoint for shared result links."""
+    session = store.get(session_id)
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="공유 링크가 만료되었거나 존재하지 않습니다. 서버가 재시작되면 링크가 초기화됩니다.",
+        )
+    try:
+        return orchestrator.result_view(session)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("shared result failed")
+        raise HTTPException(status_code=500, detail="결과를 불러올 수 없습니다.") from exc
+
+
 # --- static frontend (mounted last so /api/* wins) ---
 if settings.frontend_dir.exists():
     app.mount("/", StaticFiles(directory=str(settings.frontend_dir), html=True), name="frontend")
