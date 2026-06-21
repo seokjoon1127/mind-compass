@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decision Debugger</title>
+  <meta name="description" content="결정을, 디버깅하다. — 의사결정 디버깅 도구" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Thin black global nav, per DESIGN.md -->
+  <nav class="global-nav" aria-label="전역 내비게이션">
+    <div class="global-nav__inner">
+      <span class="global-nav__brand">Decision&nbsp;Debugger</span>
+    </div>
+  </nav>
+
+  <main id="app">
+    <!-- ===================== SCREEN 1: SETUP ===================== -->
+    <section id="screen-setup" class="screen screen--active" aria-labelledby="setup-headline">
+      <div class="setup">
+        <div class="setup__hero">
+          <h1 id="setup-headline" class="hero-display">고민을 해결하다</h1>
+          <p class="setup__sub lead">고민을 정리하는 가장 단순한 방법.</p>
+        </div>
+
+        <form id="setup-form" class="setup__form" autocomplete="off">
+          <textarea
+            id="context-input"
+            class="context-input"
+            rows="5"
+            placeholder="어떤 결정을 고민 중인가요? 상황을 자유롭게 적어주세요."
+            aria-label="고민 내용"
+          ></textarea>
+          <div class="setup__actions">
+            <button type="submit" id="start-btn" class="btn btn--primary btn--lg">고민 정리하기</button>
+          </div>
+          <p id="setup-error" class="form-error" role="alert" hidden></p>
+        </form>
+      </div>
+
+      <!-- Loading overlay (calm, non-spinner) -->
+      <div id="loading" class="loading" hidden aria-live="polite">
+        <div class="loading__inner">
+          <div class="loading__pulse" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <p id="loading-text" class="loading__text lead">상황을 읽고 있어요</p>
+          <p class="loading__hint caption">판단 기준과 선택지를 분석하는 중입니다. 잠시만요.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SCREEN 2: QUESTIONING ===================== -->
+    <section id="screen-question" class="screen" aria-labelledby="question-text" hidden>
+      <div class="question">
+        <div class="question__progress">
+          <div class="progress-track" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <span id="progress-label" class="progress-label caption">질문 1</span>
+        </div>
+
+        <h2 id="question-text" class="question__title display-md"></h2>
+
+        <!-- Body is rebuilt per-question by app.js -->
+        <div id="question-body" class="question__body"></div>
+      </div>
+    </section>
+
+    <!-- ===================== SCREEN 3: RESULT ===================== -->
+    <section id="screen-result" class="screen" aria-labelledby="result-winner" hidden>
+      <div class="result">
+
+        <header class="result__head">
+          <p class="result__eyebrow caption-strong">디버깅 결론</p>
+          <h2 id="result-winner" class="result__winner hero-display"></h2>
+          <div class="result__badges">
+            <span id="robustness-badge" class="badge"></span>
+            <span id="margin-badge" class="badge badge--quiet" hidden></span>
+          </div>
+        </header>
+
+        <!-- Markdown report -->
+        <article id="report" class="report"></article>
+
+        <!-- Drivers: what moves the conclusion -->
+        <section class="result__block" id="drivers-block" hidden>
+          <h3 class="result__h3 display-md">무엇이 결론을 움직이나</h3>
+          <p class="result__lede caption">막대가 길수록 결론에 큰 영향을 줍니다. 점선은 결론이 뒤집히는 지점입니다.</p>
+          <ul id="drivers-list" class="drivers"></ul>
+        </section>
+
+        <!-- Conflict: stated vs revealed -->
+        <section class="result__block" id="conflict-block" hidden>
+          <h3 class="result__h3 display-md">처음 생각 vs 실제 선택</h3>
+          <ul id="conflict-list" class="conflicts"></ul>
+        </section>
+
+        <!-- Ranking -->
+        <section class="result__block" id="ranking-block" hidden>
+          <h3 class="result__h3 display-md">선택지 순위</h3>
+          <ul id="ranking-list" class="ranking"></ul>
+        </section>
+
+        <!-- Next info -->
+        <section class="result__block" id="nextinfo-block" hidden>
+          <h3 class="result__h3 display-md">더 알아보면 좋은 것</h3>
+          <ul id="nextinfo-list" class="next-info"></ul>
+        </section>
+
+        <div class="result__footer">
+          <button type="button" id="restart-btn" class="btn btn--primary btn--lg">다시 시작</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
