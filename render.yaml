@@ -13,6 +13,6 @@ services:
       - key: OPENAI_API_KEY
         sync: false          # set this secret in the Render dashboard, not in git
       - key: OPENAI_MODEL
-        value: gpt-4o
+        value: gpt-5.2
       - key: PYTHON_VERSION
         value: 3.12.7
