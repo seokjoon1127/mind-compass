@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@600;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="styles.css" />
@@ -31,7 +31,7 @@
           <h1 id="setup-headline" class="wordmark">
             <span class="wm-mind">mind</span> <span class="wm-compass">compass</span>
           </h1>
-          <p class="setup__sub lead">고민을 정리하는 가장 단순한 방법.</p>
+          <p class="setup__sub lead">AI로 판단의 방향을 찾아드려요.</p>
         </div>
 
         <form id="setup-form" class="setup__form" autocomplete="off">
@@ -79,7 +79,7 @@
       <div class="result">
 
         <header class="result__head">
-          <p class="result__eyebrow caption-strong">디버깅 결론</p>
+          <p class="result__eyebrow caption-strong">결론</p>
           <h2 id="result-winner" class="result__winner hero-display"></h2>
           <div class="result__badges">
             <span id="robustness-badge" class="badge"></span>
@@ -90,15 +90,6 @@
         <!-- Markdown report -->
         <article id="report" class="report"></article>
 
-        <!-- Radar chart: factors as vertices, polygons show option scores -->
-        <section class="result__block" id="radar-block" hidden>
-          <h3 class="result__h3 display-md">팩터 도형</h3>
-          <p class="result__lede caption">각 꼭짓점은 판단 기준(팩터)을 나타내며, 폴리곤은 선택지 점수에 따른 변형을 보여줍니다. 높은 점수는 꼭짓점에 더 가깝습니다.</p>
-          <div class="radar-wrap">
-            <canvas id="radar-canvas" aria-label="팩터 도형 차트"></canvas>
-            <ul id="radar-legend" class="radar-legend"></ul>
-          </div>
-        </section>
         <!-- Drivers: what moves the conclusion -->
         <section class="result__block" id="drivers-block" hidden>
           <h3 class="result__h3 display-md">무엇이 결론을 움직이나</h3>
@@ -142,16 +133,11 @@
     <span id="toast-msg"></span>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
-    <span id="toast-msg"></span>
-  </div>
-
-  <script src="app.js">
-    // cache-bust app.js in development so edits appear immediately
-    (function(){
-      var s = document.createElement('script');
-      s.src = 'app.js?v=' + Date.now();
-      s.defer = true;
+  <script>
+    // Dev cache-bust so app.js edits show up without a hard refresh.
+    (function () {
+      var s = document.createElement("script");
+      s.src = "app.js?v=" + Date.now();
       document.body.appendChild(s);
     })();
   </script>
