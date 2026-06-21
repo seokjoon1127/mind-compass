@@ -451,10 +451,6 @@ body {
   border-top: 1px solid var(--hairline);
   padding-top: var(--s-sm);
 }
-.pair-card__example::before {
-  content: "예: ";
-  color: var(--primary);
-}
 
 .pair-secondary {
   display: flex;
