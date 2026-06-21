@@ -72,7 +72,20 @@ python -m venv .venv
 .\.venv\Scripts\python -m pytest -q
 ```
 
-## 비고 (MVP)
+## 배포 (Render)
 
-- 세션은 인메모리 저장 (서버 재시작 시 사라짐) — 배포 전 단계.
-- 질문 5~8개 상한, indicator 1단계 분해. 확장 로드맵은 설계서 §10 참고.
+이 앱은 **상시 켜진 서버**가 필요하므로(세션이 인메모리) Render 같은 호스팅이 맞습니다. 코드 변경 없이 `render.yaml` 블루프린트로 배포됩니다.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/seokjoon1127/decision-debugger)
+
+수동 단계:
+1. [render.com](https://render.com) 로그인 → **New → Blueprint** → 이 GitHub 저장소 연결
+2. Render가 `render.yaml`을 읽음 → **`OPENAI_API_KEY`** 값을 붙여넣으라고 물어봄 (저장소엔 없음, 대시보드에만 저장)
+3. **Apply** → 빌드/배포 → 발급된 URL로 접속
+
+> 무료 티어는 15분 유휴 시 잠들었다가 다음 접속에 ~30–60초 콜드스타트가 있습니다(데모엔 충분). 키는 평문 노출 이력이 있으면 새로 발급해 넣으세요.
+
+## 비고
+
+- 세션은 인메모리 저장 (서버 재시작 시 사라짐).
+- 모든 질문은 "카드 2장 비교" 형식으로 통일, 고정 5문항(조기 종료 없음), "잘 모르겠어요" 시 더 쉬운 질문으로 재귀 분해. 자세한 내용은 설계서 [`decision_debugger_design_v3.md`](decision_debugger_design_v3.md) 참고.
