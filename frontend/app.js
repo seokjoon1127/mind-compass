@@ -46,6 +46,10 @@
     rankingList: document.getElementById("ranking-list"),
     nextinfoBlock: document.getElementById("nextinfo-block"),
     nextinfoList: document.getElementById("nextinfo-list"),
+    // radar chart
+    radarBlock: document.getElementById("radar-block"),
+    radarCanvas: document.getElementById("radar-canvas"),
+    radarLegend: document.getElementById("radar-legend"),
   };
 
   // ---------------------------------------------------------------- helpers
@@ -240,17 +244,6 @@
     el.progressLabel.textContent = "질문 " + (answered + 1) + " / " + max;
 
     clear(el.questionBody);
-
-    // Prompt line above the cards. Card comparisons share one consistent
-    // instruction; any indicator question falls back to its own text.
-    var promptText =
-      q.kind === "weight_pairwise" || q.kind === "sub_question"
-        ? "이번 결정에서 더 중요한 쪽을 골라주세요"
-        : q.question || "";
-    if (promptText) {
-      el.questionBody.appendChild(makeEl("p", "question__prompt", promptText));
-    }
-
     if (q.kind === "weight_pairwise") {
       renderPairwise(q);
     } else if (q.kind === "sub_question") {
@@ -488,6 +481,9 @@
     // drivers
     renderDrivers(Array.isArray(data.drivers) ? data.drivers : []);
 
+    // radar chart (scores)
+    renderRadar(data);
+
     // conflict
     renderConflict(Array.isArray(data.conflict) ? data.conflict : []);
 
@@ -629,6 +625,152 @@
     items.forEach(function (text) {
       el.nextinfoList.appendChild(makeEl("li", null, text));
     });
+  }
+
+  // ---------------------------------------------------------------- RADAR CHART
+  function renderRadar(data) {
+    clear(el.radarLegend);
+    if (!el.radarBlock || !el.radarCanvas) return;
+
+    var scores = Array.isArray(data.scores) ? data.scores : [];
+    if (!scores.length) {
+      el.radarBlock.hidden = true;
+      return;
+    }
+    el.radarBlock.hidden = false;
+
+    // factors order: try drivers order, fallback to unique factors from scores
+    var factorOrder = (Array.isArray(data.drivers) && data.drivers.length)
+      ? data.drivers.map(function(d){return d.factor;})
+      : Array.from(new Set(scores.map(function(s){return s.factor;})));
+
+    // collect options and values
+    var options = {};
+    scores.forEach(function(s){
+      var opt = s.option || "";
+      options[opt] = options[opt] || {};
+      options[opt][s.factor] = Number(s.value) || 0;
+    });
+
+    var optionNames = Object.keys(options);
+    if (!optionNames.length) {
+      el.radarBlock.hidden = true;
+      return;
+    }
+
+    // canvas sizing for high-DPI
+    var canvas = el.radarCanvas;
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var width = Math.max(300, rect.width) | 0;
+    var height = Math.max(260, rect.height) | 0;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    var ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0,0,width,height);
+
+    var cx = width / 2;
+    var cy = height / 2;
+    var margin = 60;
+    var radius = Math.min(width, height) / 2 - margin;
+    var N = factorOrder.length;
+    var startAngle = -Math.PI / 2; // start at top
+
+    // draw grid (5 rings)
+    ctx.strokeStyle = "rgba(0,0,0,0.08)";
+    ctx.lineWidth = 1;
+    for (var ring = 5; ring >= 1; ring--) {
+      ctx.beginPath();
+      var r = (ring / 5) * radius;
+      for (var i = 0; i < N; i++) {
+        var ang = startAngle + (i / N) * Math.PI * 2;
+        var x = cx + Math.cos(ang) * r;
+        var y = cy + Math.sin(ang) * r;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // axes and labels
+    ctx.fillStyle = "#222";
+    ctx.font = "13px Inter, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (var i = 0; i < N; i++) {
+      var ang = startAngle + (i / N) * Math.PI * 2;
+      var x = cx + Math.cos(ang) * radius;
+      var y = cy + Math.sin(ang) * radius;
+      // axis
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      // label slightly beyond
+      var lx = cx + Math.cos(ang) * (radius + 18);
+      var ly = cy + Math.sin(ang) * (radius + 18);
+      ctx.fillText(factorOrder[i], lx, ly);
+    }
+
+    // colors for options
+    var palette = ["#0066cc", "#8fbf9f", "#e07a5f", "#6a4c93", "#f2c14e"];
+
+    optionNames.forEach(function(optName, idx){
+      var values = factorOrder.map(function(f){
+        var v = options[optName] && typeof options[optName][f] !== 'undefined' ? options[optName][f] : 0.0;
+        return Math.max(0, Math.min(1, Number(v) || 0));
+      });
+
+      // draw polygon
+      var stroke = palette[idx % palette.length];
+      ctx.beginPath();
+      values.forEach(function(v, i){
+        var ang = startAngle + (i / N) * Math.PI * 2;
+        var r = v * radius;
+        var x = cx + Math.cos(ang) * r;
+        var y = cy + Math.sin(ang) * r;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = hexToRgba(stroke, 0.18);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+
+      // draw points
+      values.forEach(function(v, i){
+        var ang = startAngle + (i / N) * Math.PI * 2;
+        var r = v * radius;
+        var x = cx + Math.cos(ang) * r;
+        var y = cy + Math.sin(ang) * r;
+        ctx.beginPath();
+        ctx.fillStyle = stroke;
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // legend entry
+      var li = makeEl("li", null, null);
+      var sw = makeEl("span", "radar-swatch");
+      sw.style.background = stroke;
+      li.appendChild(sw);
+      li.appendChild(document.createTextNode(optName));
+      el.radarLegend.appendChild(li);
+    });
+
+    function hexToRgba(hex, a) {
+      var c = hex.replace('#','');
+      if (c.length === 3) c = c.split('').map(function(ch){return ch+ch;}).join('');
+      var bigint = parseInt(c,16);
+      var r = (bigint >> 16) & 255;
+      var g = (bigint >> 8) & 255;
+      var b = bigint & 255;
+      return 'rgba('+r+','+g+','+b+','+a+')';
+    }
   }
 
   // ---------------------------------------------------------------- restart
